@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>AMP + Smooth + PlayReady Test</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Azure Media Player -->
+  <link
+    href="https://amp.azure.net/libs/amp/2.3.12/skins/amp-default/azuremediaplayer.min.css"
+    rel="stylesheet"
+  />
+  <script src="https://amp.azure.net/libs/amp/2.3.12/azuremediaplayer.min.js"></script>
+
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    #log {
+      margin-top: 20px;
+      background: #000;
+      padding: 10px;
+      font-size: 12px;
+      max-height: 300px;
+      overflow: auto;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Azure Media Player – Smooth Streaming + PlayReady</h1>
+
+  <video
+    id="ampPlayer"
+    class="azuremediaplayer amp-default-skin"
+    controls
+    autoplay
+    width="960"
+    height="540"
+    crossorigin="anonymous">
+  </video>
+
+  <pre id="log"></pre>
+
+  <script>
+    function log(msg) {
+      console.log(msg);
+      document.getElementById("log").textContent += msg + "\n";
+    }
+
+    var manifestUrl =
+      "https://couspss2.clarovideo.com/multimediav81/plataforma_vod/MP4/202507/MAH043139_full/MAH043139_full_MA_SS.ism/Manifest";
+
+    var playReadyLicenseUrl =
+      "https://playready-claromex-behf-vod-samsung.clarovideo.net/rightsmanager.asmx?user_id=83803529";
+
+    var challengeJson =
+      "{\"token\":\"b4ad2f21c7c1415358129113e900cd5c\",\"material_id\":\"6467020\"}";
+
+    var player = amp("ampPlayer", {
+      autoplay: true,
+      controls: true,
+      width: "960",
+      height: "540",
+      nativeControlsForTouch: false
+    });
+
+    // Eventos básicos del player
+    [
+      "loadedmetadata",
+      "canplay",
+      "playing",
+      "waiting",
+      "pause",
+      "ended"
+    ].forEach(evt => {
+      player.addEventListener(evt, () => log("EVENT: " + evt));
+    });
+
+    player.addEventListener("error", function () {
+      log("AMP ERROR:");
+      log(JSON.stringify(player.error(), null, 2));
+    });
+
+    // Set source con DRM
+    player.src([{
+      src: manifestUrl,
+      type: "application/vnd.ms-sstr+xml",
+      protectionInfo: [{
+        type: "PlayReady",
+        licenseUrl: playReadyLicenseUrl,
+        customData: challengeJson
+      }]
+    }]);
+
+    // Debug de red (fetch directo)
+    (async () => {
+      try {
+        log("Fetching manifest...");
+        const r = await fetch(manifestUrl);
+        log("Manifest status: " + r.status + " " + r.statusText);
+        const txt = await r.text();
+        log("Manifest head:");
+        log(txt.slice(0, 300));
+      } catch (e) {
+        log("Manifest fetch ERROR: " + e);
+      }
+
+      try {
+        log("Checking license server (GET)...");
+        const r2 = await fetch(playReadyLicenseUrl);
+        log("License server status: " + r2.status + " " + r2.statusText);
+      } catch (e) {
+        log("License server fetch ERROR: " + e);
+      }
+    })();
+  </script>
+
+</body>
+</html>

@@ -4,8 +4,8 @@ import streamlit as st
 import numpy as np
 
 # --- CONFIGURACIÓN DE LA APP ---
-st.set_page_config(page_title="TECHNOSELLER", layout="centered", page_icon="🎵")
-st.title("🎧 TECHNOSELLER")
+st.set_page_config(page_title="PROFIT TUNE", layout="centered", page_icon="🎵")
+st.title("🎧 PROFIT TUNE")
 st.header("Predicción de Éxito Musical")
 st.markdown(
     "Simulador interactivo basado en tu modelo de **Machine Learning** entrenado con atributos de audio del género electrónico."
